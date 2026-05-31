@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Ürün Ekle' if mod == 'ekle' else 'Ürün Düzenle' }}{% endblock %}
+{% block page_title %}{{ 'Ürün Ekle' if mod == 'ekle' else 'Ürün Düzenle' }}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">{{ '📦 Yeni Ürün' if mod == 'ekle' else '✏️ Ürün Düzenle' }}</h1>
+        <p class="page-sub">{{ 'Ürün kataloğuna yeni ürün ekle' if mod == 'ekle' else 'Ürün bilgilerini güncelle' }}</p>
+    </div>
+    <a href="{{ url_for('urunler_listele') }}" class="btn btn-ghost">← Geri</a>
+</div>
+
+<div class="card form-card">
+    <form method="POST">
+        <div class="form-grid">
+            {% if mod == 'ekle' %}
+            <div class="form-group">
+                <label class="form-label">Ürün Kodu *</label>
+                <input type="text" name="urun_kodu" class="form-input" required placeholder="PRD-001" value="{{ urun.UrunKodu if urun else '' }}">
+            </div>
+            {% endif %}
+            <div class="form-group span-2">
+                <label class="form-label">Ürün Adı *</label>
+                <input type="text" name="urun_adi" class="form-input" required placeholder="Ürün adını girin" value="{{ urun.UrunAdi if urun else '' }}">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Kategori *</label>
+                <select name="kategori_id" class="form-select" required>
+                    <option value="">Seçiniz...</option>
+                    {% for k in kategoriler %}
+                    <option value="{{ k['KategoriID'] }}" {% if urun and urun['KategoriID'] == k['KategoriID'] %}selected{% endif %}>{{ k['KategoriAdi'] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Marka *</label>
+                <select name="marka_id" class="form-select" required>
+                    <option value="">Seçiniz...</option>
+                    {% for m in markalar %}
+                    <option value="{{ m['MarkaID'] }}" {% if urun and urun['MarkaID'] == m['MarkaID'] %}selected{% endif %}>{{ m['MarkaAdi'] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Birim Fiyat (₺) *</label>
+                <input type="number" name="birim_fiyat" class="form-input" step="0.01" min="0.01" required value="{{ urun.BirimFiyat if urun else '' }}">
+            </div>
+            <div class="form-group">
+                <label class="form-label">KDV Oranı (%)</label>
+                <input type="number" name="kdv_orani" class="form-input" step="0.01" value="{{ urun.KDVOrani if urun else '18' }}">
+            </div>
+            {% if mod == 'ekle' %}
+            <div class="form-group">
+                <label class="form-label">Başlangıç Stok</label>
+                <input type="number" name="stok_miktari" class="form-input" min="0" value="0">
+            </div>
+            {% endif %}
+            <div class="form-group">
+                <label class="form-label">Min. Stok Eşiği</label>
+                <input type="number" name="min_stok_esigi" class="form-input" min="0" value="{{ urun.MinStokEsigi if urun else '10' }}">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Birim</label>
+                <select name="birim" class="form-select">
+                    {% for b in ['Adet','Paket','Kutu','Kg','Metre'] %}
+                    <option value="{{ b }}" {% if urun and urun['Birim'] == b %}selected{% endif %}>{{ b }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% if mod == 'duzenle' %}
+            <div class="form-group">
+                <label class="form-label">Durum</label>
+                <select name="aktif_mi" class="form-select">
+                    <option value="1" {% if urun and urun['AktifMi'] == 1 %}selected{% endif %}>Aktif</option>
+                    <option value="0" {% if urun and urun['AktifMi'] == 0 %}selected{% endif %}>Pasif</option>
+                </select>
+            </div>
+            {% endif %}
+        </div>
+        <div class="form-actions">
+            <a href="{{ url_for('urunler_listele') }}" class="btn btn-ghost">İptal</a>
+            <button type="submit" class="btn btn-primary">{{ '💾 Kaydet' if mod == 'ekle' else '✅ Güncelle' }}</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

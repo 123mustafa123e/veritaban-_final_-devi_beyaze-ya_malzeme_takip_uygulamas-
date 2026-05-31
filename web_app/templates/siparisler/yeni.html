@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Yeni Sipariş{% endblock %}
+{% block page_title %}Yeni Sipariş{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div><h1 class="page-title">🛒 Yeni Sipariş Oluştur</h1></div>
+    <a href="{{ url_for('siparisler_listele') }}" class="btn btn-ghost">← Geri</a>
+</div>
+<div class="card form-card">
+    <form method="POST">
+        <div class="form-grid">
+            <div class="form-group">
+                <label class="form-label">Müşteri *</label>
+                <select name="musteri_id" class="form-select" required>
+                    <option value="">Müşteri seçin...</option>
+                    {% for m in musteriler %}
+                    <option value="{{ m['MusteriID'] }}">{{ m['FirmaAdi'] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Satış Temsilcisi *</label>
+                <select name="calisan_id" class="form-select" required>
+                    <option value="">Çalışan seçin...</option>
+                    {% for c in calisanlar %}
+                    <option value="{{ c['CalisanID'] }}">{{ c['Ad'] }} {{ c['Soyad'] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Talep Edilen Teslimat</label>
+                <input type="date" name="talep_teslimat" class="form-input">
+            </div>
+            <div class="form-group span-2">
+                <label class="form-label">Notlar</label>
+                <textarea name="notlar" class="form-input" rows="2" placeholder="Sipariş notları..."></textarea>
+            </div>
+        </div>
+        <div class="form-actions">
+            <a href="{{ url_for('siparisler_listele') }}" class="btn btn-ghost">İptal</a>
+            <button type="submit" class="btn btn-primary">✅ Sipariş Oluştur</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

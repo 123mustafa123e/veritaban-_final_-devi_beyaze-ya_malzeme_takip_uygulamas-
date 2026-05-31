@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block title %}Sipariş #{{ siparis.SatisSiparisID if siparis else '' }}{% endblock %}
+{% block page_title %}Sipariş Detayı{% endblock %}
+{% block content %}
+{% if siparis %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">🛒 Sipariş #{{ siparis['SatisSiparisID'] }}</h1>
+        <p class="page-sub">{{ siparis['Musteri'] }} — {{ str(siparis['SiparisTarihi'])[:10] }}</p>
+    </div>
+    <div class="action-btns">
+        <a href="{{ url_for('siparisler_listele') }}" class="btn btn-ghost">← Geri</a>
+    </div>
+</div>
+
+<!-- Sipariş Özeti -->
+<div class="detail-grid">
+    <div class="card detail-card">
+        <div class="detail-row"><span class="detail-label">Müşteri</span><span class="detail-val">{{ siparis['Musteri'] }}</span></div>
+        <div class="detail-row"><span class="detail-label">Temsilci</span><span class="detail-val">{{ siparis['SatisTemsilcisi'] }}</span></div>
+        <div class="detail-row"><span class="detail-label">Tarih</span><span class="detail-val">{{ str(siparis['SiparisTarihi'])[:10] }}</span></div>
+        <div class="detail-row"><span class="detail-label">Durum</span><span class="badge badge-{{ siparis['Durum']|lower|replace(' ','_') }}">{{ siparis['Durum'] }}</span></div>
+    </div>
+    <div class="card detail-card">
+        <div class="detail-row"><span class="detail-label">Ara Toplam</span><span class="detail-val font-mono">₺{{ "%.2f"|format(siparis['AraToplam'] or 0) }}</span></div>
+        <div class="detail-row"><span class="detail-label">İskonto</span><span class="detail-val font-mono text-orange">-₺{{ "%.2f"|format(siparis['IskontoTutari'] or 0) }}</span></div>
+        <div class="detail-row"><span class="detail-label">KDV</span><span class="detail-val font-mono">₺{{ "%.2f"|format(siparis['KDVTutari'] or 0) }}</span></div>
+        <div class="detail-row border-top"><span class="detail-label font-bold">Genel Toplam</span><span class="detail-val font-mono text-green font-bold">₺{{ "%.2f"|format(siparis['GenelToplam'] or 0) }}</span></div>
+    </div>
+</div>
+
+<!-- Durum Güncelle + Fatura Kes -->
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">⚙️ İşlemler</h2>
+    </div>
+    <div class="action-row">
+        <form method="POST" action="{{ url_for('siparis_durum', siparis_id=siparis['SatisSiparisID']) }}" class="inline-form">
+            <select name="durum" class="form-select-sm">
+                {% for d in ['Yeni','Onaylandi','Hazirlaniyor','Kargoda','Teslim Edildi','Iptal'] %}
+                <option value="{{ d }}" {% if siparis['Durum'] == d %}selected{% endif %}>{{ d }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-secondary btn-sm">Durumu Güncelle</button>
+        </form>
+        <form method="POST" action="{{ url_for('fatura_kes', siparis_id=siparis['SatisSiparisID']) }}" class="inline-form">
+            <input type="hidden" name="vade_gun" value="30">
+            <button type="submit" class="btn btn-primary btn-sm" onclick="return confirm('Fatura kesilsin mi?')">🧾 Fatura Kes (30 gün vade)</button>
+        </form>
+    </div>
+</div>
+
+<!-- Sipariş Ürünleri -->
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">📦 Sipariş Kalemleri</h2>
+    </div>
+    <div class="table-wrap">
+        <table class="table">
+            <thead>
+                <tr><th>Ürün</th><th class="text-right">Miktar</th><th class="text-right">Birim Fiyat</th><th class="text-right">İskonto</th><th class="text-right">Toplam</th></tr>
+            </thead>
+            <tbody>
+            {% for d in detaylar %}
+            <tr>
+                <td>{{ d['UrunAdi'] }} <code class="muted">{{ d['UrunKodu'] }}</code></td>
+                <td class="text-right font-mono">{{ d['Miktar'] }}</td>
+                <td class="text-right font-mono">₺{{ "%.2f"|format(d['BirimSatisFiyati']) }}</td>
+                <td class="text-right font-mono">%{{ d['IskontoOrani'] }}</td>
+                <td class="text-right font-mono font-bold">₺{{ "%.2f"|format(d['ToplamFiyat']) }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="text-center muted">Henüz ürün eklenmedi.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Ürün Ekle -->
+{% if siparis['Durum'] != 'Iptal' %}
+<div class="card">
+    <div class="card-header"><h2 class="card-title">➕ Ürün Ekle</h2></div>
+    <form method="POST" action="{{ url_for('siparis_detay_ekle', siparis_id=siparis['SatisSiparisID']) }}">
+        <div class="form-grid p-card">
+            <div class="form-group">
+                <label class="form-label">Ürün</label>
+                <select name="urun_id" class="form-select" required onchange="setFiyat(this)">
+                    <option value="">Ürün seçin...</option>
+                    {% for u in urunler %}
+                    <option value="{{ u['UrunID'] }}" data-fiyat="{{ u['BirimFiyat'] }}">{{ u['UrunAdi'] }} (Stok: {{ u['StokMiktari'] }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Miktar</label>
+                <input type="number" name="miktar" class="form-input" min="1" value="1" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Birim Fiyat (₺)</label>
+                <input type="number" name="birim_fiyat" id="birimFiyat" class="form-input" step="0.01" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">İskonto (%)</label>
+                <input type="number" name="iskonto_orani" class="form-input" step="0.01" min="0" max="100" value="0">
+            </div>
+        </div>
+        <div class="form-actions p-card">
+            <button type="submit" class="btn btn-primary">➕ Ekle</button>
+        </div>
+    </form>
+</div>
+{% endif %}
+
+{% else %}
+<div class="card"><p class="text-center muted">Sipariş bulunamadı.</p></div>
+{% endif %}
+{% endblock %}
+{% block scripts %}
+<script>
+function setFiyat(sel) {
+    const opt = sel.options[sel.selectedIndex];
+    document.getElementById('birimFiyat').value = opt.dataset.fiyat || '';
+}
+</script>
+{% endblock %}

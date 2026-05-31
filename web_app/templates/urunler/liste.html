@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Ürünler{% endblock %}
+{% block page_title %}Ürün Yönetimi{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">📦 Ürünler</h1>
+        <p class="page-sub">Ürün kataloğu ve stok bilgileri</p>
+    </div>
+    <a href="{{ url_for('urun_ekle') }}" class="btn btn-primary">+ Yeni Ürün</a>
+</div>
+
+<!-- Filtre -->
+<div class="card filter-card">
+    <form method="GET" class="filter-form">
+        <select name="kategori_id" class="form-select">
+            <option value="">Tüm Kategoriler</option>
+            {% for k in kategoriler %}
+            <option value="{{ k['KategoriID'] }}" {% if sec_kategori == k['KategoriID']|string %}selected{% endif %}>{{ k['KategoriAdi'] }}</option>
+            {% endfor %}
+        </select>
+        <select name="marka_id" class="form-select">
+            <option value="">Tüm Markalar</option>
+            {% for m in markalar %}
+            <option value="{{ m['MarkaID'] }}" {% if sec_marka == m['MarkaID']|string %}selected{% endif %}>{{ m['MarkaAdi'] }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-secondary">Filtrele</button>
+        <a href="{{ url_for('urunler_listele') }}" class="btn btn-ghost">Temizle</a>
+    </form>
+</div>
+
+<div class="card">
+    <div class="table-wrap">
+        <table class="table" id="urunTable">
+            <thead>
+                <tr>
+                    <th>Kod</th><th>Ürün Adı</th><th>Kategori</th>
+                    <th>Marka</th><th class="text-right">Fiyat</th>
+                    <th class="text-right">Stok</th><th>Durum</th><th>İşlem</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for u in urunler %}
+            <tr>
+                <td><code class="id-badge">{{ u['UrunKodu'] }}</code></td>
+                <td class="font-medium">{{ u['UrunAdi'] }}</td>
+                <td><span class="tag">{{ u['KategoriAdi'] }}</span></td>
+                <td>{{ u['MarkaAdi'] }}</td>
+                <td class="text-right font-mono">₺{{ "%.2f"|format(u['BirimFiyat']) }}</td>
+                <td class="text-right font-mono
+                    {% if u['StokMiktari'] == 0 %}text-red
+                    {% elif u['StokMiktari'] <= u['MinStokEsigi'] %}text-orange
+                    {% else %}text-green{% endif %}">
+                    {{ u['StokMiktari'] }} {{ u['Birim'] }}
+                </td>
+                <td>
+                    {% if u['StokMiktari'] == 0 %}
+                        <span class="badge badge-iptal">Tükendi</span>
+                    {% elif u['StokMiktari'] <= u['MinStokEsigi'] %}
+                        <span class="badge badge-kargoda">Kritik</span>
+                    {% else %}
+                        <span class="badge badge-teslim_edildi">Normal</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div class="action-btns">
+                        <a href="{{ url_for('urun_duzenle', urun_id=u['UrunID']) }}" class="btn btn-sm btn-ghost">✏️</a>
+                        <form method="POST" action="{{ url_for('urun_sil', urun_id=u['UrunID']) }}" onsubmit="return confirm('Ürün pasife alınacak. Devam?')">
+                            <button type="submit" class="btn btn-sm btn-danger">🗑️</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="8" class="text-center muted">Ürün bulunamadı.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="table-footer">Toplam {{ urunler|length }} ürün</div>
+</div>
+{% endblock %}

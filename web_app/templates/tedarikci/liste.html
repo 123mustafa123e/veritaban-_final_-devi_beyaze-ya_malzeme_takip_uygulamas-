@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Tedarikçiler{% endblock %}{% block page_title %}Tedarikçi Yönetimi{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div><h1 class="page-title">🏭 Tedarikçiler</h1></div>
+    <a href="{{ url_for('tedarikci_ekle') }}" class="btn btn-primary">+ Yeni Tedarikçi</a>
+</div>
+<div class="card">
+    <div class="table-wrap">
+        <table class="table">
+            <thead><tr><th>Firma</th><th>Vergi No</th><th>Yetkili</th><th>Telefon</th><th class="text-right">Ödeme Vadesi</th><th>Durum</th><th>İşlem</th></tr></thead>
+            <tbody>
+            {% for t in tedarikciler %}
+            <tr>
+                <td class="font-medium">{{ t['FirmaAdi'] }}</td>
+                <td><code>{{ t['VergiNo'] }}</code></td>
+                <td>{{ t['YetkiliAdi'] or '-' }}</td>
+                <td>{{ t['Telefon'] }}</td>
+                <td class="text-right font-mono">{{ t['OdemeVadesi'] }} gün</td>
+                <td><span class="badge {{ 'badge-teslim_edildi' if t['AktifMi'] else 'badge-iptal' }}">{{ 'Aktif' if t['AktifMi'] else 'Pasif' }}</span></td>
+                <td><a href="{{ url_for('tedarikci_duzenle', tedarikci_id=t['TedarikciID']) }}" class="btn btn-sm btn-ghost">✏️</a></td>
+            </tr>
+            {% else %}
+            <tr><td colspan="7" class="text-center muted">Tedarikçi bulunamadı.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Ödeme Al{% endblock %}
+{% block page_title %}Ödeme Al{% endblock %}
+{% block content %}
+{% if fatura %}
+<div class="page-header">
+    <div><h1 class="page-title">💳 Ödeme Al — {{ fatura['FaturaNo'] }}</h1><p class="page-sub">{{ fatura['Musteri'] }}</p></div>
+    <a href="{{ url_for('faturalar_listele') }}" class="btn btn-ghost">← Geri</a>
+</div>
+<div class="detail-grid">
+    <div class="card detail-card">
+        <div class="detail-row"><span class="detail-label">Fatura No</span><span class="detail-val"><code>{{ fatura['FaturaNo'] }}</code></span></div>
+        <div class="detail-row"><span class="detail-label">Müşteri</span><span class="detail-val">{{ fatura['Musteri'] }}</span></div>
+        <div class="detail-row"><span class="detail-label">Toplam</span><span class="detail-val font-mono">₺{{ "%.2f"|format(fatura['ToplamTutar']) }}</span></div>
+        <div class="detail-row"><span class="detail-label">Ödenen</span><span class="detail-val font-mono text-green">₺{{ "%.2f"|format(fatura['OdenenTutar']) }}</span></div>
+        <div class="detail-row border-top"><span class="detail-label font-bold">Kalan Borç</span><span class="detail-val font-mono font-bold text-red">₺{{ "%.2f"|format(fatura['KalanBorc']) }}</span></div>
+        <div class="detail-row"><span class="detail-label">Vade</span><span class="detail-val">{{ str(fatura['VadeTarihi'])[:10] }}</span></div>
+    </div>
+    <div class="card form-card">
+        <h2 class="card-title mb-md">Yeni Ödeme Ekle</h2>
+        <form method="POST">
+            <div class="form-group">
+                <label class="form-label">Ödeme Tarihi</label>
+                <input type="date" name="odeme_tarihi" class="form-input" value="{{ import_datetime }}">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Ödeme Yöntemi *</label>
+                <select name="odeme_yontemi" class="form-select" required>
+                    {% for y in ['Nakit','Havale','Cek','Kredi Karti'] %}
+                    <option value="{{ y }}">{{ y }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Ödeme Tutarı (₺) *</label>
+                <input type="number" name="odenen_tutar" class="form-input" step="0.01" min="0.01" max="{{ fatura['KalanBorc'] }}" required placeholder="Max: ₺{{ '%.2f'|format(fatura['KalanBorc']) }}">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Açıklama</label>
+                <input type="text" name="aciklama" class="form-input" placeholder="İsteğe bağlı not...">
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">💳 Ödemeyi Kaydet</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Geçmiş Ödemeler -->
+<div class="card">
+    <div class="card-header"><h2 class="card-title">📋 Ödeme Geçmişi</h2></div>
+    <div class="table-wrap">
+        <table class="table">
+            <thead><tr><th>Tarih</th><th>Yöntem</th><th class="text-right">Tutar</th><th>Açıklama</th></tr></thead>
+            <tbody>
+            {% for o in odemeler %}
+            <tr>
+                <td>{{ str(o['OdemeTarihi'])[:10] }}</td>
+                <td><span class="tag">{{ o['OdemeYontemi'] }}</span></td>
+                <td class="text-right font-mono text-green">₺{{ "%.2f"|format(o['OdenenTutar']) }}</td>
+                <td class="muted">{{ o['Aciklama'] or '-' }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4" class="text-center muted">Henüz ödeme yapılmamış.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

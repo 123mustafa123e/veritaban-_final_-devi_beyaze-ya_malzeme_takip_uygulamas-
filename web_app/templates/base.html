@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AKEL Toptancı{% endblock %} | AKEL Beyaz Eşya</title>
+    <meta name="description" content="AKEL Beyaz Eşya Toptancılık Yönetim Sistemi">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <div class="logo">
+            <div class="logo-icon">⚡</div>
+            <div class="logo-text">
+                <span class="logo-main">AKEL</span>
+                <span class="logo-sub">Beyaz Eşya</span>
+            </div>
+        </div>
+    </div>
+
+    <nav class="sidebar-nav">
+        <div class="nav-section-label">ANA MENÜ</div>
+        <a href="{{ url_for('dashboard') }}" class="nav-item {% if request.endpoint == 'dashboard' %}active{% endif %}">
+            <span class="nav-icon">📊</span><span>Dashboard</span>
+        </a>
+        <a href="{{ url_for('urunler_listele') }}" class="nav-item {% if 'urun' in request.endpoint %}active{% endif %}">
+            <span class="nav-icon">📦</span><span>Ürünler</span>
+        </a>
+        <a href="{{ url_for('musteriler_listele') }}" class="nav-item {% if 'musteri' in request.endpoint %}active{% endif %}">
+            <span class="nav-icon">👥</span><span>Müşteriler</span>
+        </a>
+
+        <div class="nav-section-label">SATIŞ</div>
+        <a href="{{ url_for('siparisler_listele') }}" class="nav-item {% if 'siparis' in request.endpoint %}active{% endif %}">
+            <span class="nav-icon">🛒</span><span>Siparişler</span>
+        </a>
+        <a href="{{ url_for('faturalar_listele') }}" class="nav-item {% if 'fatura' in request.endpoint or 'odeme' in request.endpoint %}active{% endif %}">
+            <span class="nav-icon">🧾</span><span>Faturalar & Ödemeler</span>
+        </a>
+
+        <div class="nav-section-label">YÖNETİM</div>
+        <a href="{{ url_for('tedarikci_listele') }}" class="nav-item {% if 'tedarikci' in request.endpoint %}active{% endif %}">
+            <span class="nav-icon">🏭</span><span>Tedarikçiler</span>
+        </a>
+        <a href="{{ url_for('calisanlar_listele') }}" class="nav-item {% if 'calisan' in request.endpoint %}active{% endif %}">
+            <span class="nav-icon">👤</span><span>Çalışanlar</span>
+        </a>
+        <a href="{{ url_for('kategoriler_listele') }}" class="nav-item {% if 'kategori' in request.endpoint or 'marka' in request.endpoint %}active{% endif %}">
+            <span class="nav-icon">🏷️</span><span>Kategori & Marka</span>
+        </a>
+    </nav>
+
+    <div class="sidebar-footer">
+        <div class="sidebar-footer-text">BTS304 - Veritabanı II</div>
+        <div class="sidebar-footer-sub">2025/2026 Bahar</div>
+    </div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<div class="main-wrapper">
+    <header class="topbar">
+        <button class="menu-toggle" onclick="toggleSidebar()" id="menuBtn">☰</button>
+        <div class="topbar-title">{% block page_title %}Dashboard{% endblock %}</div>
+        <div class="topbar-right">
+            <span class="topbar-badge">🟢 Bağlı</span>
+            <span class="topbar-user">AKEL Sistem</span>
+        </div>
+    </header>
+
+    <!-- Flash Mesajlar -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-container">
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }}" onclick="this.remove()">
+            <span>{{ message }}</span>
+            <button class="alert-close">✕</button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <main class="content">
+        {% block content %}{% endblock %}
+    </main>
+</div>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

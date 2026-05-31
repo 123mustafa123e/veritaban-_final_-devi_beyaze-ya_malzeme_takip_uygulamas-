@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Siparişler{% endblock %}
+{% block page_title %}Sipariş Yönetimi{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div><h1 class="page-title">🛒 Siparişler</h1><p class="page-sub">Satış siparişleri ve takibi</p></div>
+    <a href="{{ url_for('siparis_yeni') }}" class="btn btn-primary">+ Yeni Sipariş</a>
+</div>
+
+<div class="card filter-card">
+    <form method="GET" class="filter-form">
+        <select name="durum" class="form-select">
+            <option value="">Tüm Durumlar</option>
+            {% for d in ['Yeni','Onaylandi','Hazirlaniyor','Kargoda','Teslim Edildi','Iptal'] %}
+            <option value="{{ d }}" {% if sec_durum == d %}selected{% endif %}>{{ d }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-secondary">Filtrele</button>
+        <a href="{{ url_for('siparisler_listele') }}" class="btn btn-ghost">Temizle</a>
+    </form>
+</div>
+
+<div class="card">
+    <div class="table-wrap">
+        <table class="table">
+            <thead>
+                <tr><th>#</th><th>Müşteri</th><th>Satış Temsilcisi</th><th>Tarih</th><th class="text-right">Tutar</th><th>Durum</th><th>İşlem</th></tr>
+            </thead>
+            <tbody>
+            {% for s in siparisler %}
+            <tr>
+                <td><span class="id-badge">#{{ s['SatisSiparisID'] }}</span></td>
+                <td class="font-medium">{{ s['Musteri'] }}</td>
+                <td>{{ s['SatisTemsilcisi'] }}</td>
+                <td>{{ str(s['SiparisTarihi'])[:10] }}</td>
+                <td class="text-right font-mono">₺{{ "%.2f"|format(s['GenelToplam'] or 0) }}</td>
+                <td><span class="badge badge-{{ s['Durum']|lower|replace(' ','_') }}">{{ s['Durum'] }}</span></td>
+                <td>
+                    <a href="{{ url_for('siparis_detay', siparis_id=s['SatisSiparisID']) }}" class="btn btn-sm btn-ghost">🔍 Detay</a>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="7" class="text-center muted">Sipariş bulunamadı.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="table-footer">Toplam {{ siparisler|length }} sipariş</div>
+</div>
+{% endblock %}

@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Müşteri Ekle' if mod == 'ekle' else 'Müşteri Düzenle' }}{% endblock %}
+{% block page_title %}{{ 'Müşteri Ekle' if mod == 'ekle' else 'Müşteri Düzenle' }}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div><h1 class="page-title">{{ '👥 Yeni Müşteri' if mod == 'ekle' else '✏️ Müşteri Düzenle' }}</h1></div>
+    <a href="{{ url_for('musteriler_listele') }}" class="btn btn-ghost">← Geri</a>
+</div>
+<div class="card form-card">
+    <form method="POST">
+        <div class="form-grid">
+            <div class="form-group span-2">
+                <label class="form-label">Firma Adı *</label>
+                <input type="text" name="firma_adi" class="form-input" required value="{{ musteri.FirmaAdi if musteri else '' }}">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Vergi No *</label>
+                <input type="text" name="vergi_no" class="form-input" required maxlength="20" value="{{ musteri.VergiNo if musteri else '' }}">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Yetkili Kişi</label>
+                <input type="text" name="yetkili_adi" class="form-input" value="{{ musteri.YetkiliAdi if musteri else '' }}">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Telefon *</label>
+                <input type="text" name="telefon" class="form-input" required value="{{ musteri.Telefon if musteri else '' }}">
+            </div>
+            <div class="form-group">
+                <label class="form-label">E-posta</label>
+                <input type="email" name="email" class="form-input" value="{{ musteri.Email if musteri else '' }}">
+            </div>
+            <div class="form-group span-2">
+                <label class="form-label">Adres *</label>
+                <textarea name="adres" class="form-input" rows="2" required>{{ musteri.Adres if musteri else '' }}</textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Müşteri Tipi</label>
+                <select name="musteri_tipi" class="form-select">
+                    {% for tip in ['Bayi', 'Servis', 'Perakendeci'] %}
+                    <option value="{{ tip }}" {% if musteri and musteri['MusteriTipi'] == tip %}selected{% endif %}>{{ tip }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Kredi Limiti (₺)</label>
+                <input type="number" name="kredi_limiti" class="form-input" step="0.01" min="0" value="{{ musteri.KrediLimiti if musteri else '0' }}">
+            </div>
+            <div class="form-group">
+                <label class="form-label">İndirim Oranı (%)</label>
+                <input type="number" name="indirim_orani" class="form-input" step="0.01" min="0" max="100" value="{{ musteri.IndirimOrani if musteri else '0' }}">
+            </div>
+        </div>
+        <div class="form-actions">
+            <a href="{{ url_for('musteriler_listele') }}" class="btn btn-ghost">İptal</a>
+            <button type="submit" class="btn btn-primary">{{ '💾 Kaydet' if mod == 'ekle' else '✅ Güncelle' }}</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

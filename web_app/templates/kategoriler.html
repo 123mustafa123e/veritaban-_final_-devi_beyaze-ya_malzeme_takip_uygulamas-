@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Kategori & Marka{% endblock %}{% block page_title %}Kategori & Marka Yönetimi{% endblock %}
+{% block content %}
+<div class="page-header"><h1 class="page-title">🏷️ Kategori & Marka Yönetimi</h1></div>
+<div class="dashboard-grid">
+    <div class="card">
+        <div class="card-header"><h2 class="card-title">📂 Kategoriler</h2></div>
+        <form method="POST" action="{{ url_for('kategori_ekle') }}" class="inline-form p-card">
+            <input type="text" name="kategori_adi" class="form-input" placeholder="Kategori adı *" required>
+            <input type="text" name="aciklama" class="form-input" placeholder="Açıklama">
+            <button type="submit" class="btn btn-primary">+ Ekle</button>
+        </form>
+        <div class="table-wrap">
+            <table class="table">
+                <thead><tr><th>#</th><th>Kategori</th><th>Açıklama</th></tr></thead>
+                <tbody>
+                {% for k in kategoriler %}
+                <tr>
+                    <td><span class="id-badge">{{ k['KategoriID'] }}</span></td>
+                    <td class="font-medium">{{ k['KategoriAdi'] }}</td>
+                    <td class="muted">{{ k['Aciklama'] or '-' }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="3" class="text-center muted">Kategori yok.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-header"><h2 class="card-title">🔖 Markalar</h2></div>
+        <form method="POST" action="{{ url_for('marka_ekle') }}" class="inline-form p-card">
+            <input type="text" name="marka_adi" class="form-input" placeholder="Marka adı *" required>
+            <input type="text" name="ulke_kodu" class="form-input" placeholder="TR" maxlength="2" style="width:80px">
+            <button type="submit" class="btn btn-primary">+ Ekle</button>
+        </form>
+        <div class="table-wrap">
+            <table class="table">
+                <thead><tr><th>#</th><th>Marka</th><th>Ülke</th></tr></thead>
+                <tbody>
+                {% for m in markalar %}
+                <tr>
+                    <td><span class="id-badge">{{ m['MarkaID'] }}</span></td>
+                    <td class="font-medium">{{ m['MarkaAdi'] }}</td>
+                    <td><span class="tag">{{ m['UlkeKodu'] }}</span></td>
+                </tr>
+                {% else %}
+                <tr><td colspan="3" class="text-center muted">Marka yok.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

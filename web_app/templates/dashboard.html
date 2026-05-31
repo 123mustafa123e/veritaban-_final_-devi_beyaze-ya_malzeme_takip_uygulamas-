@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Genel Bakış</h1>
+    <p class="page-sub">AKEL Beyaz Eşya Toptancılık A.Ş. — Yönetim Paneli</p>
+</div>
+
+<!-- İSTATİSTİK KARTLARI -->
+<div class="stats-grid">
+    <div class="stat-card stat-blue">
+        <div class="stat-icon">📦</div>
+        <div class="stat-body">
+            <div class="stat-num">{{ stats.get('toplam_urun', 0) }}</div>
+            <div class="stat-label">Toplam Ürün</div>
+        </div>
+        <a href="{{ url_for('urunler_listele') }}" class="stat-link">Görüntüle →</a>
+    </div>
+    <div class="stat-card stat-green">
+        <div class="stat-icon">👥</div>
+        <div class="stat-body">
+            <div class="stat-num">{{ stats.get('toplam_musteri', 0) }}</div>
+            <div class="stat-label">Aktif Müşteri</div>
+        </div>
+        <a href="{{ url_for('musteriler_listele') }}" class="stat-link">Görüntüle →</a>
+    </div>
+    <div class="stat-card stat-purple">
+        <div class="stat-icon">🛒</div>
+        <div class="stat-body">
+            <div class="stat-num">{{ stats.get('toplam_siparis', 0) }}</div>
+            <div class="stat-label">Toplam Sipariş</div>
+        </div>
+        <a href="{{ url_for('siparisler_listele') }}" class="stat-link">Görüntüle →</a>
+    </div>
+    <div class="stat-card stat-orange">
+        <div class="stat-icon">🧾</div>
+        <div class="stat-body">
+            <div class="stat-num">{{ stats.get('odenmemis_fatura', 0) }}</div>
+            <div class="stat-label">Ödenmemiş Fatura</div>
+        </div>
+        <a href="{{ url_for('faturalar_listele', odeme_durumu='Odenmedi') }}" class="stat-link">Görüntüle →</a>
+    </div>
+    <div class="stat-card stat-red">
+        <div class="stat-icon">⚠️</div>
+        <div class="stat-body">
+            <div class="stat-num">{{ stats.get('kritik_stok', 0) }}</div>
+            <div class="stat-label">Kritik Stok</div>
+        </div>
+        <a href="{{ url_for('urunler_listele') }}" class="stat-link">Görüntüle →</a>
+    </div>
+    <div class="stat-card stat-cyan">
+        <div class="stat-icon">📅</div>
+        <div class="stat-body">
+            <div class="stat-num">{{ stats.get('bugun_siparis', 0) }}</div>
+            <div class="stat-label">Bugünkü Sipariş</div>
+        </div>
+        <a href="{{ url_for('siparisler_listele') }}" class="stat-link">Görüntüle →</a>
+    </div>
+</div>
+
+<!-- ALT BÖLÜM: Son Siparişler + Kritik Stoklar -->
+<div class="dashboard-grid">
+    <!-- Son Siparişler -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">🛒 Son Siparişler</h2>
+            <a href="{{ url_for('siparisler_listele') }}" class="btn btn-sm btn-ghost">Tümü →</a>
+        </div>
+        <div class="table-wrap">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>#</th><th>Müşteri</th><th>Tarih</th>
+                        <th>Tutar</th><th>Durum</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for s in son_siparisler %}
+                <tr onclick="window.location='{{ url_for('siparis_detay', siparis_id=s['SatisSiparisID']) }}'" class="clickable-row">
+                    <td><span class="id-badge">#{{ s['SatisSiparisID'] }}</span></td>
+                    <td>{{ s['Musteri'] }}</td>
+                    <td>{{ str(s['SiparisTarihi'])[:10] }}</td>
+                    <td class="text-right font-mono">₺{{ "%.2f"|format(s['GenelToplam'] or 0) }}</td>
+                    <td><span class="badge badge-{{ s['Durum']|lower|replace(' ','_') }}">{{ s['Durum'] }}</span></td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5" class="text-center muted">Henüz sipariş yok.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Kritik Stoklar -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">⚠️ Kritik Stok Uyarıları</h2>
+            <a href="{{ url_for('urunler_listele') }}" class="btn btn-sm btn-ghost">Tümü →</a>
+        </div>
+        <div class="table-wrap">
+            <table class="table">
+                <thead>
+                    <tr><th>Ürün</th><th>Stok</th><th>Min</th><th>Durum</th></tr>
+                </thead>
+                <tbody>
+                {% for u in kritik_stoklar %}
+                <tr>
+                    <td>{{ u['UrunAdi'] }}</td>
+                    <td class="font-mono text-right">{{ u['StokMiktari'] }}</td>
+                    <td class="font-mono text-right">{{ u['MinStokEsigi'] }}</td>
+                    <td>
+                        {% if u['StokMiktari'] == 0 %}
+                        <span class="badge badge-iptal">Tükendi</span>
+                        {% else %}
+                        <span class="badge badge-kargoda">Kritik</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="4" class="text-center muted">✅ Tüm stoklar normal.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

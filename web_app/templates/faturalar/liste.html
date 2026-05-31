@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Faturalar{% endblock %}
+{% block page_title %}Fatura & Ödeme{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div><h1 class="page-title">🧾 Faturalar</h1><p class="page-sub">Fatura ve ödeme takibi</p></div>
+</div>
+<div class="card filter-card">
+    <form method="GET" class="filter-form">
+        <select name="odeme_durumu" class="form-select">
+            <option value="">Tüm Durumlar</option>
+            {% for d in ['Odenmedi','Kismen Odendi','Odendi'] %}
+            <option value="{{ d }}" {% if sec_durum == d %}selected{% endif %}>{{ d }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-secondary">Filtrele</button>
+        <a href="{{ url_for('faturalar_listele') }}" class="btn btn-ghost">Temizle</a>
+    </form>
+</div>
+<div class="card">
+    <div class="table-wrap">
+        <table class="table">
+            <thead>
+                <tr><th>Fatura No</th><th>Müşteri</th><th>Tarih</th><th>Vade</th><th class="text-right">Toplam</th><th class="text-right">Ödenen</th><th class="text-right">Kalan</th><th>Durum</th><th>İşlem</th></tr>
+            </thead>
+            <tbody>
+            {% for f in faturalar %}
+            <tr>
+                <td><code class="id-badge">{{ f['FaturaNo'] }}</code></td>
+                <td class="font-medium">{{ f['Musteri'] }}</td>
+                <td>{{ str(f['FaturaTarihi'])[:10] }}</td>
+                <td class="{{ 'text-red' if f['VadeDurumu'] == 'VADESİ GEÇMİŞ' else '' }}">{{ str(f['VadeTarihi'])[:10] }}</td>
+                <td class="text-right font-mono">₺{{ "%.2f"|format(f['ToplamTutar']) }}</td>
+                <td class="text-right font-mono text-green">₺{{ "%.2f"|format(f['OdenenTutar']) }}</td>
+                <td class="text-right font-mono font-bold {{ 'text-red' if f['KalanBorc'] > 0 else 'text-green' }}">₺{{ "%.2f"|format(f['KalanBorc']) }}</td>
+                <td>
+                    <span class="badge badge-{{ 'teslim_edildi' if f['OdemeDurumu'] == 'Odendi' else ('kargoda' if f['OdemeDurumu'] == 'Kismen Odendi' else 'iptal') }}">
+                        {{ f['OdemeDurumu'] }}
+                    </span>
+                    {% if f['VadeDurumu'] == 'VADESİ GEÇMİŞ' %}<span class="badge badge-iptal">⚠️ Vadesi Geçmiş</span>{% endif %}
+                </td>
+                <td>
+                    {% if f['OdemeDurumu'] != 'Odendi' %}
+                    <a href="{{ url_for('odeme_al', fatura_id=f['FaturaID']) }}" class="btn btn-sm btn-primary">💳 Ödeme Al</a>
+                    {% else %}
+                    <span class="muted">✅ Kapalı</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="9" class="text-center muted">Fatura bulunamadı.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="table-footer">Toplam {{ faturalar|length }} fatura</div>
+</div>
+{% endblock %}
